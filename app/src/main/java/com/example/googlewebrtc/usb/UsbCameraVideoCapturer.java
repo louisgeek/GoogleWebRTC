@@ -1,4 +1,4 @@
-package com.example.googlewebrtc;
+package com.example.googlewebrtc.usb;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
@@ -8,17 +8,15 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.view.SurfaceHolder;
 
+import com.example.googlewebrtc.R;
 import com.serenegiant.usb.DeviceFilter;
 import com.serenegiant.usb.IFrameCallback;
 import com.serenegiant.usb.USBMonitor;
 import com.serenegiant.usb.UVCCamera;
 
 import org.webrtc.CameraVideoCapturer;
-import org.webrtc.NV21Buffer;
 import org.webrtc.SurfaceTextureHelper;
 import org.webrtc.SurfaceViewRenderer;
-import org.webrtc.VideoFrame;
-import org.webrtc.YuvConverter;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -132,8 +130,8 @@ public class UsbCameraVideoCapturer implements CameraVideoCapturer, USBMonitor.O
 
     @Override
     public boolean isScreencast() {
-//        return false;
-        return true;
+        return false;
+//        return true;
     }
 
     @Override
@@ -196,57 +194,25 @@ public class UsbCameraVideoCapturer implements CameraVideoCapturer, USBMonitor.O
 
     @Override
     public void onFrame(ByteBuffer frame) {
-//        Log.e(TAG, "onFrame: qfzqfz  frame");
         executor.execute(new Runnable() {
             @Override
             public void run() {
                 byte[] bufferArray = new byte[frame.remaining()];
                 frame.get(bufferArray);
                 //
-//                long timestampNs = mSurfaceTexture.getTimestamp();
-//                mTimestampAligner.translateTimestamp(timestampNs);
-                long timestampNs = TimeUnit.MILLISECONDS.toNanos(SystemClock.elapsedRealtime());
                 int frameRotation = 0;
+                long timestamp = SystemClock.elapsedRealtime();
+                long timestampNs = TimeUnit.MILLISECONDS.toNanos(timestamp);
                 //
-                VideoFrame.I420Buffer i420Buffer = new NV21Buffer(bufferArray, 1280,
+                /*VideoFrame.I420Buffer i420Buffer = new NV21Buffer(bufferArray, 1280,
                         720, null).toI420();
                 VideoFrame videoFrame = new VideoFrame(i420Buffer, frameRotation, timestampNs);
                 //
                 mCapturerObserver.onFrameCaptured(videoFrame);
-                videoFrame.release();
-
-                //
-               /* int oesTextureId = GlUtil.generateTexture(36197);
-                float[] transformMatrix = new float[16];
-                mSurfaceTexture.getTransformMatrix(transformMatrix);
-                //
-                VideoFrame.Buffer videoFrameBuffer = new TextureBufferImpl(1280, 720,
-                        VideoFrame.TextureBuffer.Type.OES, oesTextureId,
-                        RendererCommon.convertMatrixToAndroidGraphicsMatrix(transformMatrix),
-                        mSurfaceTextureHelper.getHandler(), mYuvConverter, new Runnable() {
-                    @Override
-                    public void run() {
-                       *//* mSurfaceTextureHelper.dispose();
-                        mSurfaceTexture.release();
-                        mSurfaceViewRenderer.release();
-                        if (mTimestampAligner != null) {
-                            mTimestampAligner.dispose();
-                        }*//*
-                    }
-                });
-                VideoFrame videoFrame = new VideoFrame(videoFrameBuffer, frameRotation, timestampNs);
-                //
-                mCapturerObserver.onFrameCaptured(videoFrame);
                 videoFrame.release();*/
-
-               /* VideoFrame.I420Buffer i420Buffer = new NV12Buffer(bufferArray, 1280,
-                        720, null).toI420();
-                JavaI420Buffer javaI420Buffer =  JavaI420Buffer.allocate(1280,720);
-                javaI420Buffer.cropAndScale()
-                VideoFrame videoFrame = new VideoFrame(i420Buffer, frameRotation, timestampNs);
                 //
-                mCapturerObserver.onFrameCaptured(videoFrame);
-                videoFrame.release();*/
+//                byte[] data, int width, int height, int rotation, long timeStamp
+                mCapturerObserver.onByteBufferFrameCaptured(bufferArray, 1280, 720, frameRotation, timestamp);
             }
         });
     }

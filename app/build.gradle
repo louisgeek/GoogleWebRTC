@@ -6,7 +6,7 @@ android {
     defaultConfig {
         applicationId "com.example.googlewebrtc"
         minSdkVersion 16
-        targetSdkVersion 29
+        targetSdkVersion 22
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -33,8 +33,15 @@ dependencies {
 
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'org.greenrobot:eventbus:3.1.1'
-    //
+    //master 分支
+    //onByteBufferFrameCaptured 删除
+//    implementation 'org.webrtc:google-webrtc:1.0.28513'
+    //onByteBufferFrameCaptured 过时
+//    implementation 'org.webrtc:google-webrtc:1.0.21929'
+    //google-webrtc_1.0.21770 分支
+    //onByteBufferFrameCaptured 有效
     implementation 'org.webrtc:google-webrtc:1.0.21770'
+    //
     implementation('io.socket:socket.io-client:1.0.0') {
         exclude(group: 'org.json', module: 'json')
     }

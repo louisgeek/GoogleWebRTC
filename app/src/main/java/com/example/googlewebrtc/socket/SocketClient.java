@@ -3,7 +3,6 @@ package com.example.googlewebrtc.socket;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.example.googlewebrtc.ZApp;
 import com.example.googlewebrtc.socket.listener.EventEmitterListener;
 
 import org.greenrobot.eventbus.EventBus;
@@ -60,7 +59,7 @@ public class SocketClient {
             @Override
             public void call(Object... args) {
                 Log.e(TAG, "call: EVENT_CONNECT ");
-                ZApp.isIOSocketConnected = true;
+//                ZApp.isIOSocketConnected = true;
                 //
                 EventBus.getDefault().post(SocketEvent.create(Socket.EVENT_CONNECT, null));
             }
@@ -69,7 +68,7 @@ public class SocketClient {
             @Override
             public void call(Object... args) {
                 Log.e(TAG, "call: EVENT_CONNECT_TIMEOUT ");
-                ZApp.isIOSocketConnected = false;
+//                ZApp.isIOSocketConnected = false;
                 //
                 EventBus.getDefault().post(SocketEvent.create(Socket.EVENT_CONNECT_TIMEOUT, null));
             }
@@ -78,7 +77,7 @@ public class SocketClient {
             @Override
             public void call(Object... args) {
                 Log.e(TAG, "call: EVENT_CONNECT_ERROR ");
-                ZApp.isIOSocketConnected = false;
+//                ZApp.isIOSocketConnected = false;
                 //
                 EventBus.getDefault().post(SocketEvent.create(Socket.EVENT_CONNECT_ERROR, null));
             }
@@ -88,7 +87,7 @@ public class SocketClient {
             public void call(Object... args) {
                 Log.e(TAG, "call: EVENT_DISCONNECT ");
                 //
-                ZApp.isIOSocketConnected = false;
+//                ZApp.isIOSocketConnected = false;
                 //
                 EventBus.getDefault().post(SocketEvent.create(Socket.EVENT_DISCONNECT, null));
             }
