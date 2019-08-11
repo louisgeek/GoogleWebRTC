@@ -3,7 +3,6 @@ package com.example.googlewebrtc.usb;
 import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.hardware.usb.UsbDevice;
-import android.media.MediaRecorder;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -15,8 +14,11 @@ import com.serenegiant.usb.USBMonitor;
 import com.serenegiant.usb.UVCCamera;
 
 import org.webrtc.CameraVideoCapturer;
+import org.webrtc.CapturerObserver;
+import org.webrtc.NV21Buffer;
 import org.webrtc.SurfaceTextureHelper;
 import org.webrtc.SurfaceViewRenderer;
+import org.webrtc.VideoFrame;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -204,15 +206,13 @@ public class UsbCameraVideoCapturer implements CameraVideoCapturer, USBMonitor.O
                 long timestamp = SystemClock.elapsedRealtime();
                 long timestampNs = TimeUnit.MILLISECONDS.toNanos(timestamp);
                 //
-                /*VideoFrame.I420Buffer i420Buffer = new NV21Buffer(bufferArray, 1280,
+                VideoFrame.I420Buffer i420Buffer = new NV21Buffer(bufferArray, 1280,
                         720, null).toI420();
                 VideoFrame videoFrame = new VideoFrame(i420Buffer, frameRotation, timestampNs);
                 //
                 mCapturerObserver.onFrameCaptured(videoFrame);
-                videoFrame.release();*/
+                videoFrame.release();
                 //
-//                byte[] data, int width, int height, int rotation, long timeStamp
-                mCapturerObserver.onByteBufferFrameCaptured(bufferArray, 1280, 720, frameRotation, timestamp);
             }
         });
     }
@@ -221,16 +221,4 @@ public class UsbCameraVideoCapturer implements CameraVideoCapturer, USBMonitor.O
     public void switchCamera(CameraSwitchHandler cameraSwitchHandler) {
 
     }
-
-    @Override
-    public void addMediaRecorderToCamera(MediaRecorder mediaRecorder, MediaRecorderHandler mediaRecorderHandler) {
-
-    }
-
-    @Override
-    public void removeMediaRecorderFromCamera(MediaRecorderHandler mediaRecorderHandler) {
-
-    }
-
-
 }

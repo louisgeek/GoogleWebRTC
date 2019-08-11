@@ -37,6 +37,7 @@ import org.webrtc.AudioTrack;
 import org.webrtc.Camera1Enumerator;
 import org.webrtc.Camera2Enumerator;
 import org.webrtc.CameraEnumerator;
+import org.webrtc.CapturerObserver;
 import org.webrtc.DefaultVideoDecoderFactory;
 import org.webrtc.DefaultVideoEncoderFactory;
 import org.webrtc.EglBase;
@@ -47,6 +48,7 @@ import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 import org.webrtc.PeerConnectionFactory;
 import org.webrtc.SessionDescription;
+import org.webrtc.SurfaceTextureHelper;
 import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoCapturer;
 import org.webrtc.VideoDecoderFactory;
@@ -67,6 +69,8 @@ public class MainActivity extends AppCompatActivity {
     private AudioTrack mLocalAudioTrack;
     private VideoCapturer mLocalVideoCapturer;
     private VideoSource mLocalVideoSource;
+    private SurfaceTextureHelper mSurfaceTextureHelper;
+    private CapturerObserver mCapturerObserver;
     private VideoTrack mLocalVideoTrack;
     private SurfaceViewRenderer mLocalSurfaceViewRenderer;
     private SurfaceViewRenderer mRemoteSurfaceViewRenderer;
@@ -177,14 +181,22 @@ public class MainActivity extends AppCompatActivity {
         PeerConnectionFactory.InitializationOptions initializationOptions =
                 PeerConnectionFactory.InitializationOptions.builder(mContext.getApplicationContext())
                         .setEnableInternalTracer(true)
-                        .setEnableVideoHwAcceleration(true)
+//                        .setEnableVideoHwAcceleration(true)
                         .createInitializationOptions();
         PeerConnectionFactory.initialize(initializationOptions);
         //2 new Factory
         PeerConnectionFactory.Options options = new PeerConnectionFactory.Options();
         VideoEncoderFactory videoEncoderFactory = new DefaultVideoEncoderFactory(mEglBase.getEglBaseContext(), true, true);
         VideoDecoderFactory videoDecoderFactory = new DefaultVideoDecoderFactory(mEglBase.getEglBaseContext());
-        mPeerConnectionFactory = new PeerConnectionFactory(options, videoEncoderFactory, videoDecoderFactory);
+//        mPeerConnectionFactory = new PeerConnectionFactory(options, videoEncoderFactory, videoDecoderFactory);
+        //PeerConnectionFactory.Builder
+        PeerConnectionFactory.Builder builder = PeerConnectionFactory.builder()
+                .setVideoEncoderFactory(videoEncoderFactory)
+                .setVideoDecoderFactory(videoDecoderFactory)
+//                .setAudioDeviceModule(audioDeviceModule)
+//                .setAudioDeviceModule(null)
+                .setOptions(options);
+        mPeerConnectionFactory = builder.createPeerConnectionFactory();
         //3 new VideoCapturer
         if (UVCCamerarHelper.hasUVCCamera(mContext)) {
             mLocalVideoCapturer = new UsbCameraVideoCapturer(mContext, mLocalSurfaceViewRenderer);
@@ -192,22 +204,6 @@ public class MainActivity extends AppCompatActivity {
             //普通摄像头
             mLocalVideoCapturer = createVideoCapturer();
         }
-        /*VideoCapturer.CapturerObserver capturerObserver =
-                new AndroidVideoTrackSourceObserver(nativeTrackSource);*/
-//        mCapturerObserver=mSurfaceTextureHelper.
-//        mLocalVideoCapturer.initialize(mSurfaceTextureHelper, mContext.getApplicationContext(), mCapturerObserver);
-        //
-        /**
-         * 旧版 无需 initialize 也不需要 SurfaceTextureHelper
-         * public VideoSource createVideoSource(VideoCapturer capturer) {
-         *  org.webrtc.EglBase.Context eglContext = this.localEglbase == null ? null : this.localEglbase.getEglBaseContext();
-         * SurfaceTextureHelper surfaceTextureHelper = SurfaceTextureHelper.create("VideoCapturerThread", eglContext);
-         * long nativeAndroidVideoTrackSource = nativeCreateVideoSource(this.nativeFactory, surfaceTextureHelper, capturer.isScreencast());
-         * CapturerObserver capturerObserver = new AndroidVideoTrackSourceObserver(nativeAndroidVideoTrackSource);
-         * capturer.initialize(surfaceTextureHelper, ContextUtils.getApplicationContext(), capturerObserver);
-         * return new VideoSource(nativeAndroidVideoTrackSource);
-         * }
-         */
         //4 new AudioSource
         mLocalAudioSource = mPeerConnectionFactory.createAudioSource(new MediaConstraints());
         //5 new AudioTrack
@@ -215,14 +211,16 @@ public class MainActivity extends AppCompatActivity {
         mLocalAudioTrack.setEnabled(true);
         //
         //6 new VideoSource
-        mLocalVideoSource = mPeerConnectionFactory.createVideoSource(mLocalVideoCapturer);
+        mLocalVideoSource = mPeerConnectionFactory.createVideoSource(false);
+        mCapturerObserver = mLocalVideoSource.getCapturerObserver();
+        mSurfaceTextureHelper = SurfaceTextureHelper.create("VideoCapturerThread", mEglBase.getEglBaseContext());
+        mLocalVideoCapturer.initialize(mSurfaceTextureHelper, mContext.getApplicationContext(), mCapturerObserver);
         //7 new VideoTrack
         mLocalVideoTrack = mPeerConnectionFactory.createVideoTrack(VIDEO_TRACK_ID, mLocalVideoSource);
         mLocalVideoTrack.setEnabled(true);
         //8 VideoTrack add SurfaceViewRenderer
         mLocalVideoTrack.addSink(this.mLocalSurfaceViewRenderer);
         //
-        //mLocalVideoCapturer.isScreencast()
         //9 new PeerConnection 可以延后
         PeerConnection.RTCConfiguration rtcConfig =
                 new PeerConnection.RTCConfiguration(mIceServerList);
@@ -488,6 +486,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void release() {
+        if (mPeerConnection != null) {
+            mPeerConnection.dispose();
+            mPeerConnection = null;
+        }
+        //
         if (mLocalAudioSource != null) {
             mLocalAudioSource.dispose();
             mLocalAudioSource = null;
@@ -527,14 +530,11 @@ public class MainActivity extends AppCompatActivity {
             mLocalVideoCapturer.dispose();
             mLocalVideoCapturer = null;
         }
-       /*if (mPeerConnection != null) {
-            mPeerConnection.dispose();
-            mPeerConnection = null;
-        }
+
         if (mPeerConnectionFactory != null) {
             mPeerConnectionFactory.dispose();
             mPeerConnectionFactory = null;
-        }*/
+        }
         PeerConnectionFactory.stopInternalTracingCapture();
         PeerConnectionFactory.shutdownInternalTracer();
     }
