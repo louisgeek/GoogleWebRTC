@@ -23,6 +23,7 @@ import io.socket.client.Ack;
  * Created by louisgeek on 2019/8/8.
  */
 public class ZApp extends Application {
+    
     private static final String TAG = "ZApp";
     private static final String SP_DEVICE = "SP_DEVICE";
     private static final String SP_DEVICE_TAG = "SP_DEVICE_TAG";
