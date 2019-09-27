@@ -1,14 +1,21 @@
 package com.example.googlewebrtc;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.googlewebrtc.adapter.MyBaseAdapter;
@@ -40,11 +47,79 @@ public class LoginActivity extends AppCompatActivity {
         mContext = this;
         //
         EventBus.getDefault().register(this);
+
+        SharedPreferences sharedPreferences = getSharedPreferences("room_user", Context.MODE_PRIVATE);
+        String userName = sharedPreferences.getString("userName", "");
+        String roomId = sharedPreferences.getString("roomId", "");
+        String roomName = sharedPreferences.getString("roomName", "");
+
+        if (TextUtils.isEmpty(userName) || TextUtils.isEmpty(roomId) || TextUtils.isEmpty(roomName)) {
+            showDA();
+        } else {
+            //
+            initAll();
+        }
+
+
+    }
+
+    private void initAll() {
         //
         init();
         //
-        ZApp.socketUserLogin();
+        ZApp.socketUserLogin(this);
     }
+
+    private void showDA() {
+        SharedPreferences sharedPreferences = getSharedPreferences("room_user", Context.MODE_PRIVATE);
+        //
+        LinearLayout linearLayout = new LinearLayout(this);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        linearLayout.setLayoutParams(layoutParams);
+        linearLayout.setOrientation(LinearLayout.VERTICAL);
+        //
+        EditText editText_userName = new EditText(this);
+        editText_userName.setHint("userName");
+        editText_userName.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        ));
+        linearLayout.addView(editText_userName);
+        //
+        EditText editText_roomId = new EditText(this);
+        editText_roomId.setHint("roomId");
+        editText_roomId.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        ));
+        linearLayout.addView(editText_roomId);
+        //
+        EditText editText_roomName = new EditText(this);
+        editText_roomName.setHint("roomName");
+        editText_roomName.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        ));
+        linearLayout.addView(editText_roomName);
+        new AlertDialog.Builder(this)
+                .setPositiveButton("保存", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //
+                        String editText_userNameTxt = editText_userName.getText().toString();
+                        String editText_roomIdTxt = editText_roomId.getText().toString();
+                        String editText_roomNameTxt = editText_roomName.getText().toString();
+                        sharedPreferences.edit()
+                                .putString("userName", editText_userNameTxt)
+                                .putString("roomId", editText_roomIdTxt)
+                                .putString("roomName", editText_roomNameTxt)
+                                .apply();
+                        //
+                        initAll();
+                    }
+                })
+                .setView(linearLayout)
+                .create().show();
+    }
+
     private void inviteVideoChat(UserModel calleeUserModel) {
         //caller 邀请 callee 对讲
         VideoChatModel videoChatModel = new VideoChatModel();
@@ -63,7 +138,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 UserModel calleeUserModel = (UserModel) adapterView.getAdapter().getItem(i);
-                if (ZApp.getUserModel().socketId.equals(calleeUserModel.socketId)){
+                if (ZApp.getUserModel().socketId.equals(calleeUserModel.socketId)) {
                     Toast.makeText(mContext, "不能邀请本机！", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -95,17 +170,17 @@ public class LoginActivity extends AppCompatActivity {
         String json = socketEvent.json;
         String event = socketEvent.event;
         Log.e(TAG, "onSubscribe: event; " + event);
-        if (SocketEvents.userChange.equals(event)) {
+        if (SocketEvents.roomUserChange.equals(event)) {
             // socket.id & user Json
-            Type type = new TypeToken<Map<String, String>>() {
+            Type type = new TypeToken<Map<String, UserModel>>() {
             }.getType();
-            Map<String, String> userModelMap = mGson.fromJson(json, type);
+            Map<String, UserModel> userModelMap = mGson.fromJson(json, type);
             //
             ZApp.getUserModelList().clear();
-            for (Map.Entry<String, String> keyValueEntry : userModelMap.entrySet()) {
+            for (Map.Entry<String, UserModel> keyValueEntry : userModelMap.entrySet()) {
 //                String socketid = keyValueEntry.getKey();
-                String socketBeanJson = keyValueEntry.getValue();
-                UserModel user = mGson.fromJson(socketBeanJson, UserModel.class);
+                UserModel user = keyValueEntry.getValue();
+//                UserModel user = mGson.fromJson(socketBeanJson, UserModel.class);
                 user.userName = ZApp.getUserModel().socketId.equals(user.socketId)
                         ? user.userName + "[本机]" : user.userName;
                 ZApp.getUserModelList().add(user);

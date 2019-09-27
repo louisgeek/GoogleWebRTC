@@ -500,11 +500,19 @@ public class MainActivity extends AppCompatActivity {
             mLocalVideoSource = null;
         }
         if (mLocalAudioTrack != null) {
-            mLocalAudioTrack.dispose();
+            try {
+                mLocalAudioTrack.dispose();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             mLocalAudioTrack = null;
         }
         if (mLocalVideoTrack != null) {
-            mLocalVideoTrack.dispose();
+            try {
+                mLocalVideoTrack.dispose();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             mLocalVideoTrack = null;
         }
         if (mEglBase != null) {
