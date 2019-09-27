@@ -12,7 +12,7 @@ public class SocketEvents {
     public static final String userLogin = "userLogin";
     public static final String userLogout = "userLogout";
     //
-    public static final String userChange = "userChange";
+    public static final String roomUserChange = "roomUserChange";
     //================================================================
     public static final String videoChatInvite = "videoChatInvite";
     public static final String videoChatCancel = "videoChatCancel";
@@ -32,7 +32,7 @@ public class SocketEvents {
     static {
         eventMap.put(userLogin, new EventEmitterListener(userLogin));
         eventMap.put(userLogout, new EventEmitterListener(userLogout));
-        eventMap.put(userChange, new EventEmitterListener(userChange));
+        eventMap.put(roomUserChange, new EventEmitterListener(roomUserChange));
         //
         eventMap.put(videoChatInvite, new EventEmitterListener(videoChatInvite));
         eventMap.put(videoChatCancel, new EventEmitterListener(videoChatCancel));

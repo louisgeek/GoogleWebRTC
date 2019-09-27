@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.util.Log;
 
+import com.example.googlewebrtc.bean.base.RoomModel;
 import com.example.googlewebrtc.bean.base.UserModel;
 import com.example.googlewebrtc.socket.SocketClient;
 import com.example.googlewebrtc.socket.SocketEvent;
@@ -27,16 +28,21 @@ public class ZApp extends Application {
     private static final String TAG = "ZApp";
     private static final String SP_DEVICE = "SP_DEVICE";
     private static final String SP_DEVICE_TAG = "SP_DEVICE_TAG";
-    private static final String SOCKET_URL = "http://192.168.1.109:3001/";
+    private static final String SOCKET_URL = "http://192.168.1.108:3001/";
     //    private static final String SOCKET_URL = "http://127.0.0.1:3001/";
     private static String deviceTag;
+    static String userName;
+    static String roomId;
+    static String roomName;
 
     @Override
     public void onCreate() {
         super.onCreate();
         //
-        SharedPreferences sharedPreferences = getSharedPreferences(SP_DEVICE, Context.MODE_PRIVATE);
-        deviceTag = sharedPreferences.getString(SP_DEVICE_TAG, getDeviceName());
+        /*SharedPreferences sharedPreferences = getSharedPreferences(SP_DEVICE, Context.MODE_PRIVATE);
+        deviceTag = sharedPreferences.getString(SP_DEVICE_TAG, getDeviceName());*/
+        //
+
     }
 
     private static UserModel mUserModel = new UserModel();
@@ -62,14 +68,23 @@ public class ZApp extends Application {
         return mUserModel;
     }
 
-    public static void socketUserLogin() {
+    public static void socketUserLogin(Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences("room_user", Context.MODE_PRIVATE);
+        userName = sharedPreferences.getString("userName", "");
+        roomId = sharedPreferences.getString("roomId", "");
+        roomName = sharedPreferences.getString("roomName", "");
+        //
         ZApp.getUserModel().socketId = "";
-        ZApp.getUserModel().userName = deviceTag;
+        ZApp.getUserModel().userName = userName;
         if (SocketClient.get().socket() == null) {
             SocketClient.get().init(SOCKET_URL, "dsa/dad");
         }
-        String json = new Gson().toJson(ZApp.getUserModel());
-        SocketClient.get().socket().emit(SocketEvents.userLogin, json, new Ack() {
+        RoomModel roomModel = new RoomModel();
+        roomModel.roomId = roomId;
+        roomModel.roomName = roomName;
+        String roomModelJson = new Gson().toJson(roomModel);
+        String userModelJson = new Gson().toJson(ZApp.getUserModel());
+        SocketClient.get().socket().emit(SocketEvents.userLogin, userModelJson, roomModelJson, new Ack() {
             @Override
             public void call(Object... args) {
                 String socketId = (String) args[0];
@@ -92,10 +107,14 @@ public class ZApp extends Application {
             return;
         }
         //退出登录
-        String json = new Gson().toJson(ZApp.getUserModel());
+        RoomModel roomModel = new RoomModel();
+        roomModel.roomId = roomId;
+        roomModel.roomName = roomName;
+        String roomModelJson = new Gson().toJson(roomModel);
+        String userModelJson = new Gson().toJson(ZApp.getUserModel());
         Log.d("ll===", "socketUserLogout");
 
-        SocketClient.get().socket().emit(SocketEvents.userLogout, json);
+        SocketClient.get().socket().emit(SocketEvents.userLogout, userModelJson,roomModelJson);
     }
 
 }
