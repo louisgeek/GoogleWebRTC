@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -81,6 +82,7 @@ public class LoginActivity extends AppCompatActivity {
         //
         EditText editText_userName = new EditText(this);
         editText_userName.setHint("userName");
+        editText_userName.setText(Build.MANUFACTURER + "_" + Build.MODEL);
         editText_userName.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
         ));
@@ -88,6 +90,7 @@ public class LoginActivity extends AppCompatActivity {
         //
         EditText editText_roomId = new EditText(this);
         editText_roomId.setHint("roomId");
+        editText_roomId.setText("fangjian_01");
         editText_roomId.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
         ));
@@ -95,6 +98,7 @@ public class LoginActivity extends AppCompatActivity {
         //
         EditText editText_roomName = new EditText(this);
         editText_roomName.setHint("roomName");
+        editText_roomName.setText("房间_01");
         editText_roomName.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
         ));

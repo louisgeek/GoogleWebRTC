@@ -28,7 +28,7 @@ public class ZApp extends Application {
     private static final String TAG = "ZApp";
     private static final String SP_DEVICE = "SP_DEVICE";
     private static final String SP_DEVICE_TAG = "SP_DEVICE_TAG";
-    private static final String SOCKET_URL = "http://192.168.1.108:3001/";
+    private static final String SOCKET_URL = "http://192.168.1.113:3001/";
     //    private static final String SOCKET_URL = "http://127.0.0.1:3001/";
     private static String deviceTag;
     static String userName;

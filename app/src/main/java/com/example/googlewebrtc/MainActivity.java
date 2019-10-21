@@ -129,7 +129,12 @@ public class MainActivity extends AppCompatActivity {
                     .setNegativeButton("拒绝", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-//                            dialogInterface.dismiss();
+                            dialogInterface.dismiss();
+                            //
+                            String json = new Gson().toJson(videoChatModel);
+                            SocketClient.get().socket().emit(SocketEvents.videoChatReject, json);
+                            //
+                            finish();
                         }
                     }).create().show();
         }
@@ -474,6 +479,12 @@ public class MainActivity extends AppCompatActivity {
             int sdpMLineIndex = Integer.valueOf(_sdpMLineIndex);
             IceCandidate remoteIceCandidate = new IceCandidate(sdpMid, sdpMLineIndex, sdp);
             mPeerConnection.addIceCandidate(remoteIceCandidate);
+        } else if (SocketEvents.videoChatReject.equals(event)) {
+            VideoChatModel videoChatModel = mGson.fromJson(json, VideoChatModel.class);
+            UserModel userModel = videoChatModel.otherUserModel;
+            Toast.makeText(mContext, userModel.userName + "拒绝", Toast.LENGTH_SHORT).show();
+           //
+            finish();
         }
     }
 
