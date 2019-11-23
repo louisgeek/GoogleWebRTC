@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
     public PeerConnection mPeerConnection;
     private Context mContext;
     private MediaConstraints mSdpMediaConstraints;
+    private MediaConstraints mAudioConstraints;
     private UserModel callerUserModel;
     private UserModel calleeUserModel;
     private boolean isCaller;
@@ -210,7 +211,33 @@ public class MainActivity extends AppCompatActivity {
             mLocalVideoCapturer = createVideoCapturer();
         }
         //4 new AudioSource
-        mLocalAudioSource = mPeerConnectionFactory.createAudioSource(new MediaConstraints());
+        mAudioConstraints = new MediaConstraints();
+        //音频约束
+        //--回声消除
+        mAudioConstraints.mandatory.add(new MediaConstraints.KeyValuePair("googEchoCancellation", "true"));
+        mAudioConstraints.mandatory.add(new MediaConstraints.KeyValuePair("googEchoCancellation2", "true"));
+        //--自动增益
+        mAudioConstraints.mandatory.add(new MediaConstraints.KeyValuePair("googAutoGainControl", "false"));
+        mAudioConstraints.mandatory.add(new MediaConstraints.KeyValuePair("googAutoGainControl2", "false"));
+        //--噪音处理
+        mAudioConstraints.mandatory.add(new MediaConstraints.KeyValuePair("googNoiseSuppression", "true"));
+        mAudioConstraints.mandatory.add(new MediaConstraints.KeyValuePair("googNoiseSuppression2", "true"));
+        //--回声消除2
+        mAudioConstraints.mandatory.add(new MediaConstraints.KeyValuePair("echoCancellation", "true"));
+        mAudioConstraints.mandatory.add(new MediaConstraints.KeyValuePair("googDAEchoCancellation", "true"));
+        //
+        mAudioConstraints.mandatory.add(new MediaConstraints.KeyValuePair("googTypingNoiseDetection", "true"));
+        mAudioConstraints.mandatory.add(new MediaConstraints.KeyValuePair("googHighpassFilter", "true"));
+        mAudioConstraints.mandatory.add(new MediaConstraints.KeyValuePair("googAudioMirroring", "false"));
+        //视频约束
+        mAudioConstraints.mandatory.add(new MediaConstraints.KeyValuePair("googNoiseReduction", "true"));
+        mAudioConstraints.mandatory.add(new MediaConstraints.KeyValuePair("googLeakyBucket", "true"));
+        mAudioConstraints.mandatory.add(new MediaConstraints.KeyValuePair("googTemporalLayeredScreencast", "true"));
+        //声活性检测
+        mAudioConstraints.mandatory.add(new MediaConstraints.KeyValuePair("VoiceActivityDetection", "true"));
+        mAudioConstraints.mandatory.add(new MediaConstraints.KeyValuePair("levelControl", "true"));
+        //
+        mLocalAudioSource = mPeerConnectionFactory.createAudioSource(mAudioConstraints);
         //5 new AudioTrack
         mLocalAudioTrack = mPeerConnectionFactory.createAudioTrack(AUDIO_TRACK_ID, mLocalAudioSource);
         mLocalAudioTrack.setEnabled(true);
@@ -483,7 +510,7 @@ public class MainActivity extends AppCompatActivity {
             VideoChatModel videoChatModel = mGson.fromJson(json, VideoChatModel.class);
             UserModel userModel = videoChatModel.otherUserModel;
             Toast.makeText(mContext, userModel.userName + "拒绝", Toast.LENGTH_SHORT).show();
-           //
+            //
             finish();
         }
     }
